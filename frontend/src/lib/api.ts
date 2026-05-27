@@ -72,7 +72,7 @@ export interface LLMProvider {
 
 export interface LLMPromptResult {
   success: boolean;
-  result?: any;
+  result?: unknown;
   message?: string;
   provider?: string;
   model?: string;
@@ -249,9 +249,11 @@ export const resetLLMConfig = async (): Promise<{ success: boolean; message: str
 
 export interface AnalyticsResponse {
   success: boolean;
-  data?: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  data?: Record<string, any>;
   message?: string;
-  metadata?: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  metadata?: Record<string, any>;
   timestamp?: string;
 }
 

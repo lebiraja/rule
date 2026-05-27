@@ -1,10 +1,11 @@
-import os
 import json
-from datetime import datetime
-from dotenv import load_dotenv
-from pypdf import PdfReader
+import os
 import sys
 import warnings
+from datetime import datetime
+
+from dotenv import load_dotenv
+from pypdf import PdfReader
 
 # Suppress DeprecationWarning from cryptography (optional)
 warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -12,10 +13,14 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 # Add project root to sys.path for imports
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
-from backend.modules.text_extract.extract_native_pdf import extract_lines_from_pdf
-from backend.modules.llm_prompts.parse_resume_llm import call_mistral_resume_analyzer
-from backend.modules.text_extract.extract_ocr_pdf import extract_text_easyocr_from_pdf
-from backend.modules.llm.response_validator import validate_llm_response, response_validator
+from backend.modules.llm.response_validator import (response_validator,
+                                                    validate_llm_response)
+from backend.modules.llm_prompts.parse_resume_llm import \
+    call_mistral_resume_analyzer
+from backend.modules.text_extract.extract_native_pdf import \
+    extract_lines_from_pdf
+from backend.modules.text_extract.extract_ocr_pdf import \
+    extract_text_easyocr_from_pdf
 
 load_dotenv()
 
@@ -31,9 +36,9 @@ def clean_ai_response(raw_response: str) -> str:
 
     # Remove starting ```
     if cleaned.startswith("```"):
-        first_newline = cleaned.find('\n')
+        first_newline = cleaned.find("\n")
         if first_newline != -1:
-            cleaned = cleaned[first_newline + 1:]
+            cleaned = cleaned[first_newline + 1 :]
         else:
             cleaned = cleaned[3:]
 
@@ -63,7 +68,9 @@ def is_pdf_text_based(pdf_path: str, min_text_length: int = 20) -> bool:
             print(f"[DEBUG] Total extracted text length: {len(total_text)} characters.")
             return True
         else:
-            print(f"[DEBUG] Total extracted text length too short ({len(total_text)} chars). Treating as image-based PDF.")
+            print(
+                f"[DEBUG] Total extracted text length too short ({len(total_text)} chars). Treating as image-based PDF."
+            )
             return False
     except Exception as e:
         print(f"[ERROR] PDF read failed: {e}")
@@ -86,6 +93,7 @@ def save_result_to_json(result: dict, resume_id: str):
         json.dump(result, f, indent=2, ensure_ascii=False)
     print(f"✅ Result saved to {json_path}")
 
+
 def process_resume(pdf_path: str, job_description: str, resume_id: str):
     if not os.path.exists(pdf_path):
         print("❌ Resume not found:", pdf_path)
@@ -103,7 +111,9 @@ def process_resume(pdf_path: str, job_description: str, resume_id: str):
 
     if raw_result is None:
         print("❌ AI analysis returned None.")
-        fallback = response_validator.create_fallback_response(job_description, "AI returned None")
+        fallback = response_validator.create_fallback_response(
+            job_description, "AI returned None"
+        )
         save_result_to_json(fallback.dict(), resume_id)
         return fallback.dict()
 
@@ -119,8 +129,7 @@ def process_resume(pdf_path: str, job_description: str, resume_id: str):
         print(f"❌ LLM response validation failed: {validation_result.errors}")
         # Create fallback response with validation errors
         fallback = response_validator.create_fallback_response(
-            job_description,
-            f"Validation failed: {', '.join(validation_result.errors)}"
+            job_description, f"Validation failed: {', '.join(validation_result.errors)}"
         )
         save_result_to_json(fallback.dict(), resume_id)
         return fallback.dict()
@@ -143,7 +152,9 @@ def process_resume_ocr(pdf_path: str, job_description: str, resume_id: str):
 
     if raw_result is None:
         print("❌ AI OCR analysis returned None.")
-        fallback = response_validator.create_fallback_response(job_description, "AI OCR returned None")
+        fallback = response_validator.create_fallback_response(
+            job_description, "AI OCR returned None"
+        )
         save_result_to_json(fallback.dict(), resume_id)
         return fallback.dict()
 
@@ -160,7 +171,7 @@ def process_resume_ocr(pdf_path: str, job_description: str, resume_id: str):
         # Create fallback response with validation errors
         fallback = response_validator.create_fallback_response(
             job_description,
-            f"OCR validation failed: {', '.join(validation_result.errors)}"
+            f"OCR validation failed: {', '.join(validation_result.errors)}",
         )
         save_result_to_json(fallback.dict(), resume_id)
         return fallback.dict()

@@ -1,5 +1,6 @@
 import os
 import json
+from datetime import datetime
 from dotenv import load_dotenv
 from pypdf import PdfReader
 import sys
@@ -17,7 +18,6 @@ from backend.modules.text_extract.extract_ocr_pdf import extract_text_easyocr_fr
 from backend.modules.llm.response_validator import validate_llm_response, response_validator
 
 load_dotenv()
-api_key = os.getenv("MISTRAL_API_KEY")
 
 
 def clean_ai_response(raw_response: str) -> str:
@@ -81,6 +81,7 @@ def save_result_to_json(result: dict, resume_id: str):
     output_dir = get_output_dir()
     json_name = f"{resume_id}.json"
     json_path = os.path.join(output_dir, json_name)
+    result.setdefault("processed_at", datetime.now().isoformat())
     with open(json_path, "w", encoding="utf-8") as f:
         json.dump(result, f, indent=2, ensure_ascii=False)
     print(f"✅ Result saved to {json_path}")
@@ -98,7 +99,7 @@ def process_resume(pdf_path: str, job_description: str, resume_id: str):
         return None
 
     print("[DEBUG] Calling Mistral LLM for analysis...")
-    raw_result = call_mistral_resume_analyzer(resume_text, job_description, api_key)
+    raw_result = call_mistral_resume_analyzer(resume_text, job_description)
 
     if raw_result is None:
         print("❌ AI analysis returned None.")
@@ -138,7 +139,7 @@ def process_resume_ocr(pdf_path: str, job_description: str, resume_id: str):
         return None
 
     print("[DEBUG] Calling Mistral LLM for OCR analysis...")
-    raw_result = call_mistral_resume_analyzer(resume_text, job_description, api_key)
+    raw_result = call_mistral_resume_analyzer(resume_text, job_description)
 
     if raw_result is None:
         print("❌ AI OCR analysis returned None.")

@@ -4,9 +4,8 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
-api_key = os.getenv("MISTRAL_API_KEY")
 
-def call_mistral_resume_analyzer(resume_text,job_description,api_key):
+def call_mistral_resume_analyzer(resume_text, job_description):
     # Example job description for filtering
     # job_description = job_description
 
@@ -129,23 +128,25 @@ STRICT RULES:
             "model": model,
             "messages": [
                 {"role": "user", "content": prompt}
-            ]
+            ],
+            "stream": False
         }
-        response = requests.post(url, headers=headers, json=data)
+        response = requests.post(url, headers=headers, json=data, timeout=120)
         if response.status_code == 200:
             try:
-                # Ollama returns streaming JSON objects - we need to concatenate all content
-                lines = response.text.strip().splitlines()
-                full_content = ""
-                
-                for line in lines:
-                    if line.strip():
-                        try:
-                            obj = json.loads(line)
-                            if 'message' in obj and 'content' in obj['message']:
-                                full_content += obj['message']['content']
-                        except Exception:
-                            continue
+                resp_json = response.json()
+                full_content = resp_json.get("message", {}).get("content", "")
+                if not full_content:
+                    # Fallback: try streaming format (older Ollama versions)
+                    lines = response.text.strip().splitlines()
+                    for line in lines:
+                        if line.strip():
+                            try:
+                                obj = json.loads(line)
+                                if 'message' in obj and 'content' in obj['message']:
+                                    full_content += obj['message']['content']
+                            except Exception:
+                                continue
                 
                 if not full_content:
                     print('[WARNING] Ollama returned no content. Raw response:')
@@ -243,7 +244,7 @@ STRICT RULES:
             ]
         }
         try:
-            response = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=data, timeout=120)
+            response = requests.post(base_url, headers=headers, json=data, timeout=120)
         except requests.exceptions.Timeout:
             print("[ERROR] OpenRouter API request timed out after 120 seconds")
             return {"fit_score": 1, "fit_score_reason": "OpenRouter API timeout - unable to analyze resume", "eligibility_status": "Not Eligible", "eligibility_reason": "System timeout prevented resume analysis", "work_experience_raw": "Could not extract work experience due to timeout"}

@@ -2,6 +2,7 @@
 Pydantic AI validation models for LLM response validation
 """
 
+import os
 from pydantic import BaseModel, Field, validator
 from typing import List, Dict, Optional, Any
 from pydantic_ai import Agent, RunContext
@@ -110,15 +111,17 @@ class ValidationResult(BaseModel):
 
 
 # Pydantic AI Agent factory for structured extraction
-def create_resume_analysis_agent(provider="openrouter", model="anthropic/claude-3.5-sonnet"):
+def create_resume_analysis_agent(provider="openrouter", model="anthropic/claude-3.5-sonnet", api_key: str = None):
     """Create a Pydantic AI agent configured for the current LLM provider"""
-    # Map provider to Pydantic AI format
     if provider == "openrouter":
-        model_string = f"openai:{model}"  # OpenRouter uses OpenAI-compatible API
+        # Pydantic AI uses the openai-compatible shim; point it at OpenRouter's endpoint
+        os.environ["OPENAI_BASE_URL"] = "https://openrouter.ai/api/v1"
+        os.environ["OPENAI_API_KEY"] = api_key or os.environ.get("OPENAI_API_KEY", "")
+        model_string = f"openai:{model}"
     elif provider == "ollama":
         model_string = f"ollama:{model}"
     else:
-        model_string = f"openai:{model}"  # Default fallback
+        model_string = f"openai:{model}"
 
     return Agent(
         model_string,

@@ -5,6 +5,7 @@ Handles all LLM provider operations including configuration, testing, and manage
 
 import json
 import os
+from datetime import datetime
 from typing import Dict, List, Optional, Any
 from .provider_router import get_provider, PROVIDER_REGISTRY
 from .base_provider import BaseLLMProvider
@@ -185,7 +186,7 @@ class LLMAutomation:
                 "model": model,
                 "api_key": api_key or "",
                 "base_url": base_url,
-                "updated_at": json.dumps(None, default=str)  # Current timestamp as string
+                "updated_at": datetime.now().isoformat()
             }
             
             # Save configuration

@@ -90,17 +90,10 @@ class LLMResponseValidator:
             current_config = llm_automation.current_config
             provider = current_config.get("provider", "openrouter")
             model = current_config.get("model", "anthropic/claude-3.5-sonnet")
+            api_key = current_config.get("api_key")
 
-            # Map provider to Pydantic AI format
-            if provider == "openrouter":
-                model_string = f"openai:{model}"  # OpenRouter uses OpenAI-compatible API
-            elif provider == "ollama":
-                model_string = f"ollama:{model}"
-            else:
-                model_string = f"openai:{model}"  # Default fallback
-
-            # Create agent with current configuration
-            agent = create_resume_analysis_agent(provider, model)
+            # Create agent with current configuration (api_key sets env vars for openrouter)
+            agent = create_resume_analysis_agent(provider, model, api_key)
 
             # Prepare the prompt with context
             full_prompt = f"""

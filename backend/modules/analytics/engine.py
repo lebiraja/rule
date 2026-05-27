@@ -48,6 +48,9 @@ class AnalyticsEngine:
             else:
                 skills_list = skills_data if isinstance(skills_data, list) else []
 
+            processed_at_raw = data.get('processed_at')
+            processed_at = datetime.fromisoformat(processed_at_raw) if processed_at_raw else datetime.now()
+
             candidate = CandidateAnalytics(
                 resume_id=resume_id,
                 filename=data.get('filename', ''),
@@ -58,7 +61,8 @@ class AnalyticsEngine:
                 experience_years=self._extract_experience_years(data),
                 location=data.get('location', ''),
                 education_level=data.get('education_level', ''),
-                job_description_id=data.get('job_description_id', '')
+                job_description_id=data.get('job_description_id', ''),
+                processed_at=processed_at
             )
 
             return candidate

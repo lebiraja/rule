@@ -28,7 +28,7 @@ class OllamaProvider(BaseLLMProvider):
         }
 
         try:
-            response = requests.post(url, headers=headers, json=payload)
+            response = requests.post(url, headers=headers, json=payload, timeout=120)
 
             if response.status_code == 200:
                 return parse_llm_response(response, provider_name="Ollama")

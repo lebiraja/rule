@@ -67,8 +67,9 @@ def get_job_description_from_file(custom_job_description: Optional[str] = None) 
         return custom_job_description
     
     job_file_path = os.path.join(os.path.dirname(__file__), "..", "..", "jd_jsons/job_description.json")
+    os.makedirs(os.path.dirname(job_file_path), exist_ok=True)
     job_description = "No specific job description provided."
-    
+
     if os.path.exists(job_file_path):
         try:
             with open(job_file_path, 'r', encoding='utf-8') as f:
@@ -566,32 +567,6 @@ async def fix_llm_config():
             content={"error": f"Failed to fix config: {str(e)}"}, 
             status_code=500
         )
-
-@app.post("/api/llm/validate-config")
-# async def validate_and_fix_config():
-#     """Validate and auto-fix current LLM configuration"""
-#     try:
-#         # Reload and validate config
-#         llm_automation.current_config = llm_automation.load_config()
-        
-#         current_config = llm_automation.current_config
-#         safe_config = {k: v for k, v in current_config.items() if k != "api_key"}
-#         safe_config["has_api_key"] = bool(current_config.get("api_key"))
-        
-#         return JSONResponse(
-#             content={
-#                 "success": True,
-#                 "message": "Configuration validated and fixed if needed",
-#                 "config": safe_config
-#             }, 
-#             status_code=200
-#         )
-        
-#     except Exception as e:
-#         return JSONResponse(
-#             content={"error": f"Failed to validate config: {str(e)}"}, 
-#             status_code=500
-#         )
 
 @app.post("/api/llm/reset")
 async def reset_llm_config():

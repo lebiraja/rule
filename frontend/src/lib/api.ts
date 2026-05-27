@@ -1,15 +1,20 @@
 // API configuration and utility functions
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000';
 
 export interface ResumeAnalysisResult {
+  resume_id?: string;
+  filename?: string;
+  job_description?: string;
   full_name: string;
   email: string;
   phone_number: string;
   total_experience_years: number;
+  fit_score: number;
+  fit_score_reason: string;
   roles: Array<{
     title: string;
     company: string;
-    years: number;
+    duration: string;
   }>;
   skills: Record<string, {
     source: string;
